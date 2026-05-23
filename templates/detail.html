@@ -117,15 +117,15 @@
                 // 密码正确，做最后一次确认
                 if(confirm('密码正确！确定要永久下架这个房源吗？不可恢复。')) {
                     fetch('/api/property/{{ prop.id }}', { method: 'DELETE' })
-                    .then(response => response.json())
-                    .then(data => {
-                        if(data.status === 'success') {
+                    .then(async response => {
+                        const data = await response.json().catch(() => ({}));
+                        if (response.ok && data.status === 'success') {
                             alert('已下架');
-                            window.location.href = '/'; 
+                            window.location.href = '/';
                         } else {
-                            alert('下架失败：' + data.message);
+                            alert('下架失败：' + (data.message || ('HTTP ' + response.status)));
                         }
-                    }).catch(e => alert('系统繁忙'));
+                    }).catch(() => alert('网络异常，请稍后重试'));
                 }
             } else {
                 // 密码错误时的提示

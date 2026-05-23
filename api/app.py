@@ -31,6 +31,21 @@ def _seed_data() -> list:
     return []
 
 
+def _blob_put_options(**extra) -> dict:
+    opts = {
+        "access": "public",
+        "addRandomSuffix": False,
+        "allowOverwrite": True,
+    }
+    opts.update(extra)
+    return opts
+
+
+def _download_json(url: str) -> list:
+    with urllib.request.urlopen(url) as resp:
+        return json.load(resp)
+
+
 def load_data() -> list:
     if not _use_blob():
         return _seed_data()
@@ -40,12 +55,24 @@ def load_data() -> list:
     try:
         meta = vercel_blob.head(DATA_BLOB_PATH)
         url = meta.get("url") or meta.get("downloadUrl")
-        if not url:
-            return _seed_data()
-        with urllib.request.urlopen(url) as resp:
-            return json.load(resp)
+        if url:
+            return _download_json(url)
     except Exception:
-        return _seed_data()
+        pass
+
+    try:
+        listing = vercel_blob.list({"prefix": DATA_BLOB_PATH})
+        blobs = listing.get("blobs") or []
+        for blob in blobs:
+            pathname = blob.get("pathname", "")
+            if pathname == DATA_BLOB_PATH or pathname.endswith("data.json"):
+                url = blob.get("url") or blob.get("downloadUrl")
+                if url:
+                    return _download_json(url)
+    except Exception:
+        pass
+
+    return _seed_data()
 
 
 def save_data(data: list) -> None:
@@ -62,7 +89,7 @@ def save_data(data: list) -> None:
     vercel_blob.put(
         DATA_BLOB_PATH,
         payload,
-        {"access": "public", "addRandomSuffix": "false"},
+        _blob_put_options(contentType="application/json"),
     )
 
 
@@ -77,7 +104,7 @@ def upload_media(filename: str, content: bytes, content_type: str | None = None)
     import vercel_blob
 
     pathname = f"macau-rent/uploads/{filename}"
-    options = {"access": "public", "addRandomSuffix": "false"}
+    options = _blob_put_options()
     if content_type:
         options["contentType"] = content_type
     resp = vercel_blob.put(pathname, content, options)
@@ -205,10 +232,13 @@ def api_upload():
 
 @app.route("/api/property/<prop_id>", methods=["DELETE"])
 def delete_property(prop_id):
-    db = load_data()
-    prop_to_delete = next((p for p in db if p["id"] == prop_id), None)
-    if prop_to_delete:
+    try:
+        db = load_data()
+        prop_to_delete = next((p for p in db if p["id"] == prop_id), None)
+        if not prop_to_delete:
+            return jsonify({"status": "error", "message": "房源不存在"}), 404
         db.remove(prop_to_delete)
         save_data(db)
         return jsonify({"status": "success"})
-    return jsonify({"status": "error"}), 404
+    except Exception as e:
+        return jsonify({"status": "error", "message": str(e)}), 500
