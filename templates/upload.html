@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>发布房源</title>
+    <style>
+        body { font-family: -apple-system, sans-serif; background: #F5F6F8; margin: 0;}
+        #app { max-width: 480px; margin: 0 auto; background: #fff; padding: 20px;}
+        .form-item { margin-bottom: 15px; }
+        label { display: block; font-weight: bold; margin-bottom: 5px; font-size: 14px;}
+        input[type="text"], input[type="number"], select, textarea { width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 6px; box-sizing: border-box; }
+        .submit-btn { width: 100%; padding: 12px; background: #00C853; color: white; border: none; border-radius: 6px; font-size: 16px; font-weight: bold; margin-top: 20px;}
+    </style>
+</head>
+<body>
+    <div id="app">
+        <h2>发布新房源</h2>
+        <form id="uploadForm">
+            <div class="form-item">
+                <label>标题</label>
+                <input type="text" name="title" required placeholder="如：横琴口岸精装公寓">
+            </div>
+            
+            <div class="form-item">
+                <label>租金 (元/月)</label>
+                <input type="number" name="price" required placeholder="如：2500">
+            </div>
+            
+            <div class="form-item">
+                <label>商圈</label>
+                <select name="location">
+                    <option value="不限">不限</option>
+                    <option value="横琴口岸商圈">横琴口岸商圈</option>
+                    <option value="十字门商圈">十字门商圈</option>
+                </select>
+            </div>
+
+            <div class="form-item">
+                <label>类型</label>
+                <select name="rent_type">
+                    <option value="不限">不限</option>
+                    <option value="整租">整租</option>
+                    <option value="合租">合租</option>
+                </select>
+            </div>
+
+            <div class="form-item">
+                <label>户型</label>
+                <select name="layout">
+                    <option value="不限">不限</option>
+                    <option value="一室">一室</option>
+                    <option value="两室">两室</option>
+                    <option value="三室">三室</option>
+                    <option value="四室及以上">四室及以上</option>
+                </select>
+            </div>
+
+            <div class="form-item">
+                <label>卧室 (若为合租请选择)</label>
+                <select name="bedroom">
+                    <option value="不限">不限</option>
+                    <option value="主卧">主卧</option>
+                    <option value="次卧">次卧</option>
+                </select>
+            </div>
+
+            <div class="form-item">
+                <label>住宅形式</label>
+                <select name="housing_form">
+                    <option value="不限">不限</option>
+                    <option value="单间公寓">单间公寓</option>
+                    <option value="多人卧室">多人卧室</option>
+                </select>
+            </div>
+            
+            <div class="form-item">
+                <label>房源图片/视频 (最多上传10个)</label>
+                <input type="file" name="media" multiple accept="image/*,video/mp4,video/quicktime" required id="fileInput">
+                <p id="fileCount" style="font-size:12px;color:gray;"></p>
+            </div>
+
+            <div class="form-item">
+                <label>详细描述</label>
+                <textarea name="desc" rows="4" required></textarea>
+            </div>
+            
+            <button type="submit" class="submit-btn">发布</button>
+        </form>
+    </div>
+
+    <script>
+        document.getElementById('fileInput').addEventListener('change', function() {
+            if(this.files.length > 10) {
+                alert('最多只能上传10个文件！');
+                this.value = ''; // 清空选择
+            } else {
+                document.getElementById('fileCount').innerText = `已选择 ${this.files.length} 个文件`;
+            }
+        });
+
+        document.getElementById('uploadForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            let formData = new FormData(this);
+            fetch('/api/upload', { method: 'POST', body: formData })
+            .then(res => res.json())
+            .then(data => {
+                if(data.status === 'success') {
+                    alert('发布成功！');
+                    window.location.href = '/';
+                } else {
+                    alert('失败：' + data.message);
+                }
+            }).catch(e => alert('系统繁忙'));
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,46 @@
+[
+    {
+        "id": "f9bcae42",
+        "title": "横琴口岸房，步行口岸，华融琴海湾两房一卫，南向，家电齐全入住",
+        "location": "横琴口岸商圈",
+        "price": "5300",
+        "desc": "横琴口岸房，步行口岸，华融琴海湾两房一卫，南向，家电齐全入住",
+        "rent_type": "整租",
+        "layout": "两室",
+        "bedroom": "不限",
+        "housing_form": "不限",
+        "media": [
+            "/static/uploads/9a5f660d0f064367a3eefa96428e1eaf_600x450c_3.jpg"
+        ]
+    },
+    {
+        "id": "ae28b7f0",
+        "title": "十字门四季峰景80平方三房一卫3800/月",
+        "location": "十字门商圈",
+        "price": "3800",
+        "desc": "十字门四季峰景80平方三房一卫3800/月",
+        "rent_type": "合租",
+        "layout": "不限",
+        "bedroom": "不限",
+        "housing_form": "多人卧室",
+        "media": [
+            "/static/uploads/af644aa5db984d569b61e2c373dd413c_2026032416485175_2.jpg",
+            "/static/uploads/7ad6f5ff391249a7ab7e4f87948cb94c_2026032416485175_6.jpg",
+            "/static/uploads/89b7d9e3d81c4628aef8cc1517084075_2026032416485175_9.jpg"
+        ]
+    },
+    {
+        "id": "cc4946a0",
+        "title": "横琴口岸房，步行口岸，华融琴海湾两房一卫，南向，家电齐全入住",
+        "location": "横琴口岸商圈",
+        "price": "5300",
+        "desc": "横琴口岸房，步行口岸，华融琴海湾两房一卫，南向，家电齐全入住",
+        "rent_type": "整租",
+        "layout": "不限",
+        "bedroom": "不限",
+        "housing_form": "不限",
+        "media": [
+            "/static/uploads/5c89d07f3c664a19bc194b732845539d_90dedbabbeb1d5b3d41bdc1f230d94c2.mp4"
+        ]
+    }
+]

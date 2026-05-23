@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>澳生优租</title>
+    <style>
+        /* 原有CSS省略以节省篇幅，重点添加过滤器的CSS */
+        body { font-family: -apple-system, sans-serif; background: #F5F6F8; margin: 0;}
+        #app { max-width: 480px; margin: 0 auto; background: #fff; min-height: 100vh; }
+        .header { background: #00C853; padding: 20px; color: white; }
+        
+        /* 筛选区样式 */
+        .filter-section { padding: 15px; background: #FAFAFA; border-bottom: 1px solid #EAEAEA; }
+        .filter-row { display: flex; gap: 10px; margin-bottom: 10px; overflow-x: auto; white-space: nowrap; }
+        .filter-row select { padding: 6px; border: 1px solid #ccc; border-radius: 4px; font-size: 13px; }
+        .price-inputs { display: flex; align-items: center; gap: 5px; margin-bottom: 10px;}
+        .price-inputs input { width: 80px; padding: 5px; border: 1px solid #ccc; border-radius: 4px;}
+        .price-btns button { padding: 4px 8px; font-size: 12px; border: 1px solid #00C853; color: #00C853; background: white; border-radius: 4px; cursor: pointer;}
+        .btn-search { width: 100%; padding: 10px; background: #00C853; color: white; border: none; border-radius: 4px; font-weight: bold;}
+
+        /* 房源卡片样式 */
+        .card { display: flex; padding: 15px; border-bottom: 1px solid #F0F0F0; text-decoration: none; color: inherit; }
+        .card-img-wrap { width: 110px; height: 85px; border-radius: 8px; overflow: hidden; background: #eee;}
+        .card-img-wrap img { width: 100%; height: 100%; object-fit: cover; }
+        .card-info { margin-left: 12px; flex: 1; display: flex; flex-direction: column; justify-content: space-between;}
+        .card-title { font-size: 16px; font-weight: bold; }
+        .card-tags { font-size: 12px; color: #888; }
+        .card-price { font-size: 18px; color: #FF4A39; font-weight: bold; }
+    </style>
+</head>
+<body>
+    <div id="app">
+        <div class="header">
+            <h2>🎓 澳生优租</h2>
+        </div>
+
+        <div class="filter-section">
+            <form action="/" method="GET" id="filterForm">
+                <div class="filter-row">
+                    <select name="location">
+                        <option value="不限">商圈: 不限</option>
+                        <option value="横琴口岸商圈">横琴口岸</option>
+                        <option value="十字门商圈">十字门</option>
+                    </select>
+                    <select name="rent_type">
+                        <option value="不限">类型: 不限</option>
+                        <option value="整租">整租</option>
+                        <option value="合租">合租</option>
+                    </select>
+                    <select name="layout">
+                        <option value="不限">户型: 不限</option>
+                        <option value="一室">一室</option>
+                        <option value="两室">两室</option>
+                        <option value="三室">三室</option>
+                        <option value="四室及以上">四室及以上</option>
+                    </select>
+                    <select name="bedroom">
+                        <option value="不限">卧室: 不限</option>
+                        <option value="主卧">主卧</option>
+                        <option value="次卧">次卧</option>
+                    </select>
+                    <select name="housing_form">
+                        <option value="不限">住宅: 不限</option>
+                        <option value="单间公寓">单间公寓</option>
+                        <option value="多人卧室">多人卧室</option>
+                    </select>
+                </div>
+                
+                <div class="price-inputs">
+                    <span>租金：</span>
+                    <input type="number" name="min_price" id="minP" placeholder="最低" value="{{ request.args.get('min_price', '') }}">
+                    <span>-</span>
+                    <input type="number" name="max_price" id="maxP" placeholder="最高" value="{{ request.args.get('max_price', '') }}">
+                </div>
+                
+                <div class="price-btns">
+                    <button type="button" onclick="setPrice(0, 2000)">2000以下</button>
+                    <button type="button" onclick="setPrice(2000, 3000)">2000-3000</button>
+                    <button type="button" onclick="setPrice(3000, 5000)">3000-5000</button>
+                    <button type="button" onclick="setPrice(5000, 10000)">5000-10000</button>
+                </div>
+                
+                <button type="submit" class="btn-search" style="margin-top: 10px;">筛选房源</button>
+            </form>
+        </div>
+
+        <div class="list-container">
+            {% for prop in properties %}
+            <a href="/property/{{ prop.id }}" class="card">
+                <div class="card-img-wrap" style="position: relative;">
+                    {% if prop.media %}
+                        {% if '.mp4' in prop.media[0] or '.mov' in prop.media[0] %}
+                            <img src="https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?ixlib=rb-4.0.3&auto=format&fit=crop&w=300&q=80" alt="视频房源" style="width:100%; height:100%; object-fit:cover;">
+                            
+                            <div style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.2); display: flex; justify-content: center; align-items: center;">
+                                <div style="width: 32px; height: 32px; background: rgba(0,0,0,0.6); border-radius: 50%; display: flex; justify-content: center; align-items: center; padding-left: 3px;">
+                                    <span style="color: white; font-size: 14px;">▶</span>
+                                </div>
+                            </div>
+                        {% else %}
+                            <img src="{{ prop.media[0] }}" alt="房源图" style="width:100%; height:100%; object-fit:cover;">
+                        {% endif %}
+                    {% else %}
+                        <img src="{{ prop.image }}" alt="房源图" style="width:100%; height:100%; object-fit:cover;">
+                    {% endif %}
+                </div>
+                <div class="card-info">
+                    <div class="card-title">{{ prop.title }}</div>
+                    <div class="card-tags">
+                        {{ prop.location }} 
+                        {% if prop.rent_type and prop.rent_type != '不限' %} | {{ prop.rent_type }} {% endif %}
+                        {% if prop.layout and prop.layout != '不限' %} | {{ prop.layout }} {% endif %}
+                        {% if prop.bedroom and prop.bedroom != '不限' %} | {{ prop.bedroom }} {% endif %}
+                        {% if prop.housing_form and prop.housing_form != '不限' %} | {{ prop.housing_form }} {% endif %}
+                    </div>
+                    <div class="card-price">{{ prop.price }} <span>元/月</span></div>
+                </div>
+            </a>
+            {% endfor %}
+            {% if not properties %}
+                <div style="text-align:center; padding: 30px; color:#999;">没有找到符合条件的房源</div>
+            {% endif %}
+        </div>
+    </div>
+
+    <script>
+        // 快捷设置价格区间并自动提交表单
+        // 快捷设置价格区间并自动提交表单
+        function setPrice(min, max) {
+            document.getElementById('minP').value = min;
+            document.getElementById('maxP').value = max;
+            document.getElementById('filterForm').submit();
+        }
+
+        // 让下拉框保持用户上一次选择的状态
+        const urlParams = new URLSearchParams(window.location.search);
+        // 将缺失的 bedroom 和 housing_form 加进数组里
+        ['location', 'rent_type', 'layout', 'bedroom', 'housing_form'].forEach(key => {
+            if(urlParams.has(key)) {
+                let selectElement = document.querySelector(`select[name="${key}"]`);
+                if (selectElement) {
+                    selectElement.value = urlParams.get(key);
+                }
+            }
+        });
+    </script>
+</body>
+</html>
