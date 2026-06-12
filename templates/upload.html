@@ -105,6 +105,17 @@
                         </select>
                     </div>
                 </div>
+
+                <div class="form-item" style="display: flex; gap: 10px;">
+                    <div style="flex: 1;">
+                        <label>微信</label>
+                        <input type="text" name="contact_wechat" required placeholder="如：housekeeper888">
+                    </div>
+                    <div style="flex: 1;">
+                        <label>电话</label>
+                        <input type="text" name="contact_phone" required placeholder="如：13800000000">
+                    </div>
+                </div>
                 
                 <div class="form-item">
                     <label>房源图片/视频 (最多上传10个)</label>
@@ -131,6 +142,7 @@
                         <th>标题</th>
                         <th>商圈</th>
                         <th>租金</th>
+                        <th>联系方式</th>
                         <th>操作</th>
                     </tr>
                 </thead>
@@ -154,6 +166,11 @@
                         </td>
                         <td>{{ prop.location }}</td>
                         <td class="prop-price">¥{{ prop.price }}</td>
+                        <td>
+                            {% set contact = prop.contact | default({}) %}
+                            <div style="font-size: 12px; color: #555;">微信：{{ contact.wechat | default(prop.contact_wechat | default('-')) }}</div>
+                            <div style="font-size: 12px; color: #555; margin-top: 4px;">电话：{{ contact.phone | default(prop.contact_phone | default('-')) }}</div>
+                        </td>
                         <td>
                             <button class="btn-delete" onclick="deleteProperty('{{ prop.id }}')">下架</button>
                         </td>

@@ -185,6 +185,7 @@ def detail(prop_id):
     return "找不到该房源", 404
 
 
+@app.route("/upload", methods=["GET"])
 @app.route("/merchant/upload", methods=["GET"])
 def upload_page():
     # 获取现有房源数据，传递给模板用于右侧的列表展示
@@ -201,11 +202,13 @@ def api_upload():
     layout = request.form.get("layout", "不限")
     bedroom = request.form.get("bedroom", "不限")
     housing_form = request.form.get("housing_form", "不限")
+    contact_wechat = (request.form.get("contact_wechat") or "").strip()
+    contact_phone = (request.form.get("contact_phone") or "").strip()
 
     files = request.files.getlist("media")
 
-    if not title or not price or not files:
-        return jsonify({"status": "error", "message": "标题、价格和至少一个媒体文件为必填项"}), 400
+    if not title or not price or not contact_wechat or not contact_phone or not files:
+        return jsonify({"status": "error", "message": "标题、价格、联系方式和至少一个媒体文件为必填项"}), 400
 
     if len(files) > 10:
         return jsonify({"status": "error", "message": "最多只能上传10个文件"}), 400
@@ -232,6 +235,10 @@ def api_upload():
         "layout": layout,
         "bedroom": bedroom,
         "housing_form": housing_form,
+        "contact": {
+            "wechat": contact_wechat,
+            "phone": contact_phone,
+        },
         "media": media_urls,
     }
 
