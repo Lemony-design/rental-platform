@@ -5,83 +5,157 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>澳生优租</title>
     <style>
-        /* 原有CSS省略以节省篇幅，重点添加过滤器的CSS */
-        body { font-family: -apple-system, sans-serif; background: #F5F6F8; margin: 0;}
-        #app { max-width: 480px; margin: 0 auto; background: #fff; min-height: 100vh; }
-        .header { background: #00C853; padding: 20px; color: white; }
-        
-        /* 筛选区样式 */
-        .filter-section { padding: 15px; background: #FAFAFA; border-bottom: 1px solid #EAEAEA; }
-        .filter-row { display: flex; gap: 10px; margin-bottom: 10px; overflow-x: auto; white-space: nowrap; }
-        .filter-row select { padding: 6px; border: 1px solid #ccc; border-radius: 4px; font-size: 13px; }
-        .price-inputs { display: flex; align-items: center; gap: 5px; margin-bottom: 10px;}
-        .price-inputs input { width: 80px; padding: 5px; border: 1px solid #ccc; border-radius: 4px;}
-        .price-btns button { padding: 4px 8px; font-size: 12px; border: 1px solid #00C853; color: #00C853; background: white; border-radius: 4px; cursor: pointer;}
-        .btn-search { width: 100%; padding: 10px; background: #00C853; color: white; border: none; border-radius: 4px; font-weight: bold;}
+        body { font-family: -apple-system, 'PingFang SC', 'Helvetica Neue', sans-serif; background: #F5F6F8; margin: 0; }
+        #app { max-width: 480px; margin: 0 auto; background: #F5F6F8; min-height: 100vh; position: relative; }
 
-        /* 房源卡片样式 */
-        .card { display: flex; padding: 15px; border-bottom: 1px solid #F0F0F0; text-decoration: none; color: inherit; }
-        .card-img-wrap { width: 110px; height: 85px; border-radius: 8px; overflow: hidden; background: #eee;}
+        /* 1. 沉浸式主视觉（大厂风格） */
+        .hero {
+            position: relative;
+            width: 100%;
+            height: 280px;
+            background-image: url('/static/picture/主页.jpg');
+            background-size: cover;
+            background-position: center;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .hero::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: linear-gradient(to bottom, rgba(0,0,0,0.1) 0%, rgba(0,0,0,0.5) 100%);
+            z-index: 1;
+        }
+
+        .hero-content {
+            position: relative;
+            z-index: 2;
+            color: #FFF;
+            text-align: center;
+            margin-top: -30px;
+        }
+
+        .hero-title {
+            font-size: 32px;
+            font-weight: 800;
+            margin: 0 0 8px 0;
+            letter-spacing: 2px;
+            text-shadow: 0 2px 10px rgba(0,0,0,0.3);
+        }
+
+        .hero-subtitle {
+            font-size: 14px;
+            font-weight: 300;
+            opacity: 0.9;
+            text-shadow: 0 1px 4px rgba(0,0,0,0.3);
+        }
+
+        /* 2. 毛玻璃悬浮筛选区 */
+        .filter-section {
+            position: relative;
+            z-index: 10;
+            margin: -40px 15px 15px 15px;
+            padding: 20px 15px;
+            background: rgba(255, 255, 255, 0.9);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border-radius: 16px;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.08);
+            border: 1px solid rgba(255,255,255,0.5);
+        }
+
+        .filter-row { display: flex; gap: 8px; margin-bottom: 12px; overflow-x: auto; white-space: nowrap; padding-bottom: 4px; }
+        .filter-row::-webkit-scrollbar { display: none; }
+        .filter-row select {
+            padding: 8px 12px; border: none; background: #F5F6F8; border-radius: 8px;
+            font-size: 13px; font-weight: 500; color: #333; outline: none;
+        }
+
+        .price-inputs { display: flex; align-items: center; gap: 8px; margin-bottom: 12px; }
+        .price-inputs input {
+            flex: 1; padding: 10px; border: 1px solid #EAEAEA; border-radius: 8px;
+            background: #FAFAFA; text-align: center; outline: none; transition: 0.3s;
+        }
+        .price-inputs input:focus { border-color: #00C853; background: #FFF; }
+        .price-inputs span { color: #888; font-weight: bold; }
+
+        .price-btns { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 15px; }
+        .price-btns button {
+            flex: 1; padding: 6px 0; font-size: 12px; border: none;
+            background: #F0F9F4; color: #00C853; border-radius: 6px; font-weight: 500; cursor: pointer;
+        }
+
+        .btn-search {
+            width: 100%; padding: 12px; background: linear-gradient(135deg, #00D26A, #00C853);
+            color: white; border: none; border-radius: 10px; font-size: 16px; font-weight: bold;
+            box-shadow: 0 4px 12px rgba(0, 200, 83, 0.3); transition: 0.2s; cursor: pointer;
+        }
+        .btn-search:active { transform: scale(0.98); }
+
+        .list-container { padding: 0 15px; }
+        .card { display: flex; padding: 15px; margin-bottom: 15px; background: #fff; border-radius: 12px; box-shadow: 0 2px 10px rgba(0,0,0,0.03); text-decoration: none; color: inherit; border: none; }
+        .card-img-wrap { width: 120px; height: 95px; border-radius: 8px; overflow: hidden; background: #eee; flex-shrink: 0; }
         .card-img-wrap img { width: 100%; height: 100%; object-fit: cover; }
-        .card-info { margin-left: 12px; flex: 1; display: flex; flex-direction: column; justify-content: space-between;}
-        .card-title { font-size: 16px; font-weight: bold; }
-        .card-tags { font-size: 12px; color: #888; }
-        .card-price { font-size: 18px; color: #FF4A39; font-weight: bold; }
+        .card-info { margin-left: 12px; flex: 1; display: flex; flex-direction: column; justify-content: space-between; }
+        .card-title { font-size: 16px; font-weight: 600; color: #222; line-height: 1.4; display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; overflow: hidden; }
+        .card-tags { font-size: 12px; color: #888; margin-top: 4px; }
+        .card-price { font-size: 20px; color: #FF4A39; font-weight: 800; margin-top: 6px; }
+        .card-price span { font-size: 12px; font-weight: normal; }
     </style>
 </head>
 <body>
     <div id="app">
-        <div class="header">
-            <h2>🎓 澳生优租</h2>
-        </div>
+        <div class="hero"></div>
 
         <div class="filter-section">
             <form action="/" method="GET" id="filterForm">
                 <div class="filter-row">
                     <select name="location">
-                        <option value="不限">商圈: 不限</option>
+                        <option value="不限">📍 商圈: 不限</option>
                         <option value="横琴口岸商圈">横琴口岸</option>
                         <option value="十字门商圈">十字门</option>
                     </select>
                     <select name="rent_type">
-                        <option value="不限">类型: 不限</option>
+                        <option value="不限">🏠 类型: 不限</option>
                         <option value="整租">整租</option>
                         <option value="合租">合租</option>
                     </select>
                     <select name="layout">
-                        <option value="不限">户型: 不限</option>
+                        <option value="不限">🛋️ 户型: 不限</option>
                         <option value="一室">一室</option>
                         <option value="两室">两室</option>
                         <option value="三室">三室</option>
                         <option value="四室及以上">四室及以上</option>
                     </select>
                     <select name="bedroom">
-                        <option value="不限">卧室: 不限</option>
+                        <option value="不限">🛏️ 卧室: 不限</option>
                         <option value="主卧">主卧</option>
                         <option value="次卧">次卧</option>
                     </select>
                     <select name="housing_form">
-                        <option value="不限">住宅: 不限</option>
+                        <option value="不限">🏢 住宅: 不限</option>
                         <option value="单间公寓">单间公寓</option>
                         <option value="多人卧室">多人卧室</option>
                     </select>
                 </div>
                 
                 <div class="price-inputs">
-                    <span>租金：</span>
-                    <input type="number" name="min_price" id="minP" placeholder="最低" value="{{ request.args.get('min_price', '') }}">
-                    <span>-</span>
-                    <input type="number" name="max_price" id="maxP" placeholder="最高" value="{{ request.args.get('max_price', '') }}">
+                    <input type="number" name="min_price" id="minP" placeholder="最低租金" value="{{ request.args.get('min_price', '') }}">
+                    <span>—</span>
+                    <input type="number" name="max_price" id="maxP" placeholder="最高租金" value="{{ request.args.get('max_price', '') }}">
                 </div>
                 
                 <div class="price-btns">
-                    <button type="button" onclick="setPrice(0, 2000)">2000以下</button>
-                    <button type="button" onclick="setPrice(2000, 3000)">2000-3000</button>
-                    <button type="button" onclick="setPrice(3000, 5000)">3000-5000</button>
-                    <button type="button" onclick="setPrice(5000, 10000)">5000-10000</button>
+                    <button type="button" onclick="setPrice(0, 2000)">2k内</button>
+                    <button type="button" onclick="setPrice(2000, 3000)">2k-3k</button>
+                    <button type="button" onclick="setPrice(3000, 5000)">3k-5k</button>
+                    <button type="button" onclick="setPrice(5000, 10000)">5k以上</button>
                 </div>
                 
-                <button type="submit" class="btn-search" style="margin-top: 10px;">筛选房源</button>
+                <button type="submit" class="btn-search">立即寻找优选房源</button>
             </form>
         </div>
 
@@ -125,7 +199,6 @@
     </div>
 
     <script>
-        // 快捷设置价格区间并自动提交表单
         // 快捷设置价格区间并自动提交表单
         function setPrice(min, max) {
             document.getElementById('minP').value = min;

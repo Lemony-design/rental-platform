@@ -14,7 +14,11 @@ DATA_BLOB_PATH = "macau-rent/data.json"
 LOCAL_DATA_FILE = os.path.join(ROOT_DIR, "data.json")
 LOCAL_UPLOAD_DIR = os.path.join(ROOT_DIR, "public", "uploads")
 
-app = Flask(__name__, template_folder=os.path.join(ROOT_DIR, "templates"))
+app = Flask(
+    __name__,
+    template_folder=os.path.join(ROOT_DIR, "templates"),
+    static_folder=os.path.join(ROOT_DIR, "static"),
+)
 
 
 def _use_blob() -> bool:
@@ -242,3 +246,5 @@ def delete_property(prop_id):
         return jsonify({"status": "success"})
     except Exception as e:
         return jsonify({"status": "error", "message": str(e)}), 500
+if __name__ == "__main__":
+    app.run(host="127.0.0.1", port=5000, debug=True)
