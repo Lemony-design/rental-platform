@@ -4,7 +4,7 @@ import urllib.request
 import uuid
 
 from dotenv import load_dotenv
-from flask import Flask, jsonify, render_template, request
+from flask import Flask, jsonify, render_template, request, send_from_directory
 from werkzeug.utils import secure_filename
 
 load_dotenv()
@@ -13,6 +13,7 @@ ROOT_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 DATA_BLOB_PATH = "macau-rent/data.json"
 LOCAL_DATA_FILE = os.path.join(ROOT_DIR, "data.json")
 LOCAL_UPLOAD_DIR = os.path.join(ROOT_DIR, "public", "uploads")
+PUBLIC_PICTURE_DIR = os.path.join(ROOT_DIR, "public", "picture")
 
 app = Flask(
     __name__,
@@ -130,6 +131,11 @@ def _guess_content_type(filename: str) -> str | None:
     if lower.endswith(".mov"):
         return "video/quicktime"
     return None
+
+
+@app.route("/picture/<path:filename>")
+def serve_picture(filename):
+    return send_from_directory(PUBLIC_PICTURE_DIR, filename)
 
 
 @app.route("/")
