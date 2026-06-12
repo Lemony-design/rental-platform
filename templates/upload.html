@@ -122,7 +122,10 @@
         </div>
 
         <div class="manage-section">
-            <h2>已发布房源管理 (共 {{ properties|length }} 套)</h2>
+            <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #eee; padding-bottom: 15px; margin-bottom: 20px;">
+                <h2 style="margin: 0; border: none; padding: 0;">已发布房源管理 (共 {{ properties|length }} 套)</h2>
+                <input type="text" id="searchInput" placeholder="🔍 搜索标题、商圈、租金、户型..." style="padding: 8px 12px; border: 1px solid #d9d9d9; border-radius: 6px; width: 250px; font-size: 14px; outline: none;">
+            </div>
             {% if properties %}
             <table>
                 <thead>
@@ -220,6 +223,22 @@
                 }).catch(() => alert('网络异常，请稍后重试'));
             }
         }
+        // 实时搜索/过滤房源逻辑
+        document.getElementById('searchInput').addEventListener('input', function() {
+            const keyword = this.value.toLowerCase();
+            const rows = document.querySelectorAll('.manage-section tbody tr');
+            
+            rows.forEach(row => {
+                // 获取当前这一行的所有文字内容（包含了标题、商圈、租金等所有字段）
+                const rowText = row.innerText.toLowerCase();
+                // 如果文字内容包含了搜索关键字，就显示该行，否则隐藏
+                if (rowText.includes(keyword)) {
+                    row.style.display = '';
+                } else {
+                    row.style.display = 'none';
+                }
+            });
+        });
     </script>
 </body>
 </html>
