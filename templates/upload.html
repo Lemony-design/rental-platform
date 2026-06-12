@@ -24,7 +24,14 @@
 
         /* 右侧：房源管理列表 */
         .manage-section { flex: 2; background: #fff; padding: 25px; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); overflow-x: auto;}
-        .manage-section h2 { margin-top: 0; font-size: 18px; border-bottom: 1px solid #eee; padding-bottom: 15px; margin-bottom: 20px;}
+        .manage-section h2 { margin: 0; font-size: 18px; }
+        .manage-header { display: flex; justify-content: space-between; align-items: flex-start; gap: 16px; border-bottom: 1px solid #eee; padding-bottom: 15px; margin-bottom: 20px; }
+        .search-panel { display: flex; justify-content: flex-end; align-items: center; gap: 8px; flex-wrap: wrap; max-width: 520px; }
+        .search-panel select { width: auto; min-width: 110px; }
+        .search-panel input { min-width: 220px; }
+        .btn-clear { background: #F5F5F5; color: #555; border: 1px solid #d9d9d9; padding: 9px 12px; border-radius: 6px; cursor: pointer; font-size: 14px; transition: 0.3s; }
+        .btn-clear:hover { background: #EDEDED; }
+        .search-status { width: 100%; text-align: right; font-size: 12px; color: #888; }
         table { width: 100%; border-collapse: collapse; text-align: left; }
         th { background: #FAFAFA; padding: 12px 15px; font-size: 14px; color: #666; border-bottom: 1px solid #eee;}
         td { padding: 12px 15px; border-bottom: 1px solid #eee; vertical-align: middle; font-size: 14px;}
@@ -133,9 +140,32 @@
         </div>
 
         <div class="manage-section">
-            <h2>已发布房源管理 (共 {{ properties|length }} 套)</h2>
+            <div class="manage-header">
+                <h2>已发布房源管理 (共 {{ properties|length }} 套)</h2>
+                {% if properties %}
+                <div class="search-panel">
+                    <select id="searchField" aria-label="选择检索字段">
+                        <option value="all">全字段</option>
+                        <option value="title">标题</option>
+                        <option value="location">商圈</option>
+                        <option value="price">租金</option>
+                        <option value="rentType">类型</option>
+                        <option value="layout">户型</option>
+                        <option value="bedroom">卧室</option>
+                        <option value="housingForm">住宅形式</option>
+                        <option value="wechat">微信</option>
+                        <option value="phone">电话</option>
+                        <option value="desc">描述</option>
+                        <option value="id">房源ID</option>
+                    </select>
+                    <input id="propertySearch" type="text" placeholder="输入关键词检索房源">
+                    <button type="button" class="btn-clear" id="clearSearch">清空</button>
+                    <div class="search-status" id="searchStatus">显示全部 {{ properties|length }} 套房源</div>
+                </div>
+                {% endif %}
+            </div>
             {% if properties %}
-            <table>
+            <table id="propertyTable">
                 <thead>
                     <tr>
                         <th>首图</th>
@@ -146,9 +176,25 @@
                         <th>操作</th>
                     </tr>
                 </thead>
-                <tbody>
+                <tbody id="propertyRows">
                     {% for prop in properties %}
-                    <tr>
+                    {% set contact = prop.contact | default({}) %}
+                    {% set contact_wechat = contact.wechat | default(prop.contact_wechat | default('')) %}
+                    {% set contact_phone = contact.phone | default(prop.contact_phone | default('')) %}
+                    <tr
+                        class="property-row"
+                        data-id="{{ prop.id | default('') }}"
+                        data-title="{{ prop.title | default('') }}"
+                        data-location="{{ prop.location | default('') }}"
+                        data-price="{{ prop.price | default('') }}"
+                        data-rent-type="{{ prop.rent_type | default('') }}"
+                        data-layout="{{ prop.layout | default('') }}"
+                        data-bedroom="{{ prop.bedroom | default('') }}"
+                        data-housing-form="{{ prop.housing_form | default('') }}"
+                        data-wechat="{{ contact_wechat }}"
+                        data-phone="{{ contact_phone }}"
+                        data-desc="{{ prop.desc | default('') }}"
+                    >
                         <td>
                             {% if prop.media %}
                                 {% if '.mp4' in prop.media[0] or '.mov' in prop.media[0] %}
@@ -167,9 +213,8 @@
                         <td>{{ prop.location }}</td>
                         <td class="prop-price">¥{{ prop.price }}</td>
                         <td>
-                            {% set contact = prop.contact | default({}) %}
-                            <div style="font-size: 12px; color: #555;">微信：{{ contact.wechat | default(prop.contact_wechat | default('-')) }}</div>
-                            <div style="font-size: 12px; color: #555; margin-top: 4px;">电话：{{ contact.phone | default(prop.contact_phone | default('-')) }}</div>
+                            <div style="font-size: 12px; color: #555;">微信：{{ contact_wechat | default('-', true) }}</div>
+                            <div style="font-size: 12px; color: #555; margin-top: 4px;">电话：{{ contact_phone | default('-', true) }}</div>
                         </td>
                         <td>
                             <button class="btn-delete" onclick="deleteProperty('{{ prop.id }}')">下架</button>
@@ -221,6 +266,80 @@
                 btn.disabled = false;
             });
         });
+
+        // 房源管理检索逻辑
+        const searchField = document.getElementById('searchField');
+        const propertySearch = document.getElementById('propertySearch');
+        const clearSearch = document.getElementById('clearSearch');
+        const searchStatus = document.getElementById('searchStatus');
+        const propertyRows = Array.from(document.querySelectorAll('.property-row'));
+        const searchableFields = [
+            'id',
+            'title',
+            'location',
+            'price',
+            'rentType',
+            'layout',
+            'bedroom',
+            'housingForm',
+            'wechat',
+            'phone',
+            'desc'
+        ];
+
+        function normalizeSearchText(value) {
+            return String(value || '').trim().toLowerCase();
+        }
+
+        function rowMatchesSearch(row, field, keyword) {
+            if (!keyword) {
+                return true;
+            }
+
+            if (field === 'all') {
+                return searchableFields.some(name => normalizeSearchText(row.dataset[name]).includes(keyword));
+            }
+
+            return normalizeSearchText(row.dataset[field]).includes(keyword);
+        }
+
+        function filterProperties() {
+            if (!propertySearch || !searchField) {
+                return;
+            }
+
+            const keyword = normalizeSearchText(propertySearch.value);
+            const field = searchField.value;
+            let visibleCount = 0;
+
+            propertyRows.forEach(row => {
+                const matched = rowMatchesSearch(row, field, keyword);
+                row.style.display = matched ? '' : 'none';
+                if (matched) {
+                    visibleCount += 1;
+                }
+            });
+
+            if (searchStatus) {
+                searchStatus.innerText = keyword
+                    ? `匹配到 ${visibleCount} / ${propertyRows.length} 套房源`
+                    : `显示全部 ${propertyRows.length} 套房源`;
+            }
+        }
+
+        if (propertySearch && searchField) {
+            propertySearch.addEventListener('input', filterProperties);
+            searchField.addEventListener('change', filterProperties);
+        }
+
+        if (clearSearch) {
+            clearSearch.addEventListener('click', function() {
+                propertySearch.value = '';
+                searchField.value = 'all';
+                filterProperties();
+                propertySearch.focus();
+            });
+        }
 
         // 下架房源逻辑
         function deleteProperty(propId) {
