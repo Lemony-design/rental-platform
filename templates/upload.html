@@ -3,116 +3,223 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>发布房源</title>
+    <title>房源管理后台</title>
     <style>
-        body { font-family: -apple-system, sans-serif; background: #F5F6F8; margin: 0;}
-        #app { max-width: 480px; margin: 0 auto; background: #fff; padding: 20px;}
+        body { font-family: -apple-system, 'PingFang SC', sans-serif; background: #F0F2F5; margin: 0; padding: 20px;}
+        .header { background: #fff; padding: 20px 30px; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center;}
+        .header h1 { margin: 0; font-size: 24px; color: #333; }
+        .header a { color: #00C853; text-decoration: none; font-weight: bold; }
+        
+        .dashboard { display: flex; gap: 20px; max-width: 1600px; margin: 0 auto; align-items: flex-start; }
+        
+        /* 左侧：发布房源表单 */
+        .upload-section { flex: 1; background: #fff; padding: 25px; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); min-width: 400px; max-width: 500px;}
+        .upload-section h2 { margin-top: 0; font-size: 18px; border-bottom: 1px solid #eee; padding-bottom: 15px; margin-bottom: 20px;}
         .form-item { margin-bottom: 15px; }
-        label { display: block; font-weight: bold; margin-bottom: 5px; font-size: 14px;}
-        input[type="text"], input[type="number"], select, textarea { width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 6px; box-sizing: border-box; }
-        .submit-btn { width: 100%; padding: 12px; background: #00C853; color: white; border: none; border-radius: 6px; font-size: 16px; font-weight: bold; margin-top: 20px;}
+        label { display: block; font-weight: bold; margin-bottom: 8px; font-size: 14px; color: #555;}
+        input[type="text"], input[type="number"], select, textarea { width: 100%; padding: 10px; border: 1px solid #d9d9d9; border-radius: 6px; box-sizing: border-box; font-size: 14px; transition: 0.3s;}
+        input:focus, select:focus, textarea:focus { border-color: #00C853; outline: none; box-shadow: 0 0 0 2px rgba(0,200,83,0.2);}
+        .submit-btn { width: 100%; padding: 12px; background: #00C853; color: white; border: none; border-radius: 6px; font-size: 16px; font-weight: bold; margin-top: 10px; cursor: pointer; transition: 0.3s;}
+        .submit-btn:hover { background: #00A644; }
+
+        /* 右侧：房源管理列表 */
+        .manage-section { flex: 2; background: #fff; padding: 25px; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); overflow-x: auto;}
+        .manage-section h2 { margin-top: 0; font-size: 18px; border-bottom: 1px solid #eee; padding-bottom: 15px; margin-bottom: 20px;}
+        table { width: 100%; border-collapse: collapse; text-align: left; }
+        th { background: #FAFAFA; padding: 12px 15px; font-size: 14px; color: #666; border-bottom: 1px solid #eee;}
+        td { padding: 12px 15px; border-bottom: 1px solid #eee; vertical-align: middle; font-size: 14px;}
+        .prop-img { width: 80px; height: 60px; object-fit: cover; border-radius: 4px; background: #f0f0f0;}
+        .prop-title { max-width: 200px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-weight: bold;}
+        .prop-price { color: #FF4A39; font-weight: bold; }
+        .btn-delete { background: #FF4D4F; color: white; border: none; padding: 6px 12px; border-radius: 4px; cursor: pointer; font-size: 13px; transition: 0.3s;}
+        .btn-delete:hover { background: #d9363e; }
+        .empty-state { text-align: center; padding: 50px; color: #999; }
     </style>
 </head>
 <body>
-    <div id="app">
-        <h2>发布新房源</h2>
-        <form id="uploadForm">
-            <div class="form-item">
-                <label>标题</label>
-                <input type="text" name="title" required placeholder="如：横琴口岸精装公寓">
-            </div>
-            
-            <div class="form-item">
-                <label>租金 (元/月)</label>
-                <input type="number" name="price" required placeholder="如：2500">
-            </div>
-            
-            <div class="form-item">
-                <label>商圈</label>
-                <select name="location">
-                    <option value="不限">不限</option>
-                    <option value="横琴口岸商圈">横琴口岸商圈</option>
-                    <option value="十字门商圈">十字门商圈</option>
-                </select>
-            </div>
+    <div class="header">
+        <h1>房源管理后台</h1>
+        <a href="/" target="_blank">↗ 访问前台主页</a>
+    </div>
 
-            <div class="form-item">
-                <label>类型</label>
-                <select name="rent_type">
-                    <option value="不限">不限</option>
-                    <option value="整租">整租</option>
-                    <option value="合租">合租</option>
-                </select>
-            </div>
+    <div class="dashboard">
+        <div class="upload-section">
+            <h2>发布新房源</h2>
+            <form id="uploadForm">
+                <div class="form-item">
+                    <label>标题</label>
+                    <input type="text" name="title" required placeholder="如：横琴口岸精装公寓">
+                </div>
+                
+                <div class="form-item" style="display: flex; gap: 10px;">
+                    <div style="flex: 1;">
+                        <label>租金 (元/月)</label>
+                        <input type="number" name="price" required placeholder="如：2500">
+                    </div>
+                    <div style="flex: 1;">
+                        <label>商圈</label>
+                        <select name="location">
+                            <option value="不限">不限</option>
+                            <option value="横琴口岸商圈">横琴口岸商圈</option>
+                            <option value="十字门商圈">十字门商圈</option>
+                        </select>
+                    </div>
+                </div>
 
-            <div class="form-item">
-                <label>户型</label>
-                <select name="layout">
-                    <option value="不限">不限</option>
-                    <option value="一室">一室</option>
-                    <option value="两室">两室</option>
-                    <option value="三室">三室</option>
-                    <option value="四室及以上">四室及以上</option>
-                </select>
-            </div>
+                <div class="form-item" style="display: flex; gap: 10px;">
+                    <div style="flex: 1;">
+                        <label>类型</label>
+                        <select name="rent_type">
+                            <option value="不限">不限</option>
+                            <option value="整租">整租</option>
+                            <option value="合租">合租</option>
+                        </select>
+                    </div>
+                    <div style="flex: 1;">
+                        <label>户型</label>
+                        <select name="layout">
+                            <option value="不限">不限</option>
+                            <option value="一室">一室</option>
+                            <option value="两室">两室</option>
+                            <option value="三室">三室</option>
+                            <option value="四室及以上">四室及以上</option>
+                        </select>
+                    </div>
+                </div>
 
-            <div class="form-item">
-                <label>卧室 (若为合租请选择)</label>
-                <select name="bedroom">
-                    <option value="不限">不限</option>
-                    <option value="主卧">主卧</option>
-                    <option value="次卧">次卧</option>
-                </select>
-            </div>
+                <div class="form-item" style="display: flex; gap: 10px;">
+                    <div style="flex: 1;">
+                        <label>卧室 (合租必选)</label>
+                        <select name="bedroom">
+                            <option value="不限">不限</option>
+                            <option value="主卧">主卧</option>
+                            <option value="次卧">次卧</option>
+                        </select>
+                    </div>
+                    <div style="flex: 1;">
+                        <label>住宅形式</label>
+                        <select name="housing_form">
+                            <option value="不限">不限</option>
+                            <option value="单间公寓">单间公寓</option>
+                            <option value="多人卧室">多人卧室</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <div class="form-item">
+                    <label>房源图片/视频 (最多上传10个)</label>
+                    <input type="file" name="media" multiple accept="image/*,video/mp4,video/quicktime" required id="fileInput" style="border: none; padding: 0;">
+                    <p id="fileCount" style="font-size:12px;color:#888; margin-top: 5px;"></p>
+                </div>
 
-            <div class="form-item">
-                <label>住宅形式</label>
-                <select name="housing_form">
-                    <option value="不限">不限</option>
-                    <option value="单间公寓">单间公寓</option>
-                    <option value="多人卧室">多人卧室</option>
-                </select>
-            </div>
-            
-            <div class="form-item">
-                <label>房源图片/视频 (最多上传10个)</label>
-                <input type="file" name="media" multiple accept="image/*,video/mp4,video/quicktime" required id="fileInput">
-                <p id="fileCount" style="font-size:12px;color:gray;"></p>
-            </div>
+                <div class="form-item">
+                    <label>详细描述</label>
+                    <textarea name="desc" rows="4" required placeholder="请输入房源详细介绍..."></textarea>
+                </div>
+                
+                <button type="submit" class="submit-btn">发布房源</button>
+            </form>
+        </div>
 
-            <div class="form-item">
-                <label>详细描述</label>
-                <textarea name="desc" rows="4" required></textarea>
-            </div>
-            
-            <button type="submit" class="submit-btn">发布</button>
-        </form>
+        <div class="manage-section">
+            <h2>已发布房源管理 (共 {{ properties|length }} 套)</h2>
+            {% if properties %}
+            <table>
+                <thead>
+                    <tr>
+                        <th>首图</th>
+                        <th>标题</th>
+                        <th>商圈</th>
+                        <th>租金</th>
+                        <th>操作</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for prop in properties %}
+                    <tr>
+                        <td>
+                            {% if prop.media %}
+                                {% if '.mp4' in prop.media[0] or '.mov' in prop.media[0] %}
+                                    <video src="{{ prop.media[0] }}" class="prop-img"></video>
+                                {% else %}
+                                    <img src="{{ prop.media[0] }}" class="prop-img">
+                                {% endif %}
+                            {% else %}
+                                <div class="prop-img"></div>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <div class="prop-title" title="{{ prop.title }}">{{ prop.title }}</div>
+                            <div style="font-size: 12px; color: #888; margin-top: 4px;">{{ prop.layout }} | {{ prop.rent_type }}</div>
+                        </td>
+                        <td>{{ prop.location }}</td>
+                        <td class="prop-price">¥{{ prop.price }}</td>
+                        <td>
+                            <button class="btn-delete" onclick="deleteProperty('{{ prop.id }}')">下架</button>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            {% else %}
+            <div class="empty-state">目前还没有发布任何房源哦~</div>
+            {% endif %}
+        </div>
     </div>
 
     <script>
+        // 限制文件数量提示
         document.getElementById('fileInput').addEventListener('change', function() {
             if(this.files.length > 10) {
                 alert('最多只能上传10个文件！');
-                this.value = ''; // 清空选择
+                this.value = ''; 
+                document.getElementById('fileCount').innerText = '';
             } else {
                 document.getElementById('fileCount').innerText = `已选择 ${this.files.length} 个文件`;
             }
         });
 
+        // 发布房源逻辑
         document.getElementById('uploadForm').addEventListener('submit', function(e) {
             e.preventDefault();
+            const btn = document.querySelector('.submit-btn');
+            btn.innerText = '发布中...';
+            btn.disabled = true;
+
             let formData = new FormData(this);
             fetch('/api/upload', { method: 'POST', body: formData })
             .then(res => res.json())
             .then(data => {
                 if(data.status === 'success') {
                     alert('发布成功！');
-                    window.location.href = '/';
+                    window.location.reload(); // 发布成功后直接刷新页面，右边列表会更新
                 } else {
                     alert('失败：' + data.message);
+                    btn.innerText = '发布房源';
+                    btn.disabled = false;
                 }
-            }).catch(e => alert('系统繁忙'));
+            }).catch(e => {
+                alert('系统繁忙');
+                btn.innerText = '发布房源';
+                btn.disabled = false;
+            });
         });
+
+        // 下架房源逻辑
+        function deleteProperty(propId) {
+            if(confirm('确定要下架并删除这个房源吗？不可恢复。')) {
+                fetch('/api/property/' + propId, { method: 'DELETE' })
+                .then(async response => {
+                    const data = await response.json().catch(() => ({}));
+                    if (response.ok && data.status === 'success') {
+                        alert('已下架');
+                        window.location.reload(); // 下架成功刷新页面
+                    } else {
+                        alert('下架失败：' + (data.message || '未知错误'));
+                    }
+                }).catch(() => alert('网络异常，请稍后重试'));
+            }
+        }
     </script>
 </body>
 </html>

@@ -187,8 +187,9 @@ def detail(prop_id):
 
 @app.route("/merchant/upload", methods=["GET"])
 def upload_page():
-    return render_template("upload.html")
-
+    # 获取现有房源数据，传递给模板用于右侧的列表展示
+    db = load_data()
+    return render_template("upload.html", properties=db)
 
 @app.route("/api/upload", methods=["POST"])
 def api_upload():
