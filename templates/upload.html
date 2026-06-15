@@ -34,6 +34,28 @@
         .btn-delete { background: #FF4D4F; color: white; border: none; padding: 6px 12px; border-radius: 4px; cursor: pointer; font-size: 13px; transition: 0.3s;}
         .btn-delete:hover { background: #d9363e; }
         .empty-state { text-align: center; padding: 50px; color: #999; }
+
+        /* 检索栏 */
+        .manage-header { border-bottom: 1px solid #eee; padding-bottom: 15px; margin-bottom: 20px; }
+        .manage-header-top { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; margin-bottom: 12px; }
+        .manage-header-top h2 { margin: 0; font-size: 18px; border: none; padding: 0; flex-shrink: 0; }
+        .search-keyword-wrap { display: flex; gap: 8px; align-items: center; flex: 1; justify-content: flex-end; min-width: 260px; }
+        .search-keyword-wrap .search-keyword { width: 100%; max-width: 320px; }
+        .filter-count { font-size: 13px; color: #888; font-weight: normal; }
+        .search-bar { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+        .search-bar input[type="text"],
+        .search-bar input[type="number"],
+        .search-bar select {
+            padding: 7px 10px; border: 1px solid #d9d9d9; border-radius: 6px;
+            font-size: 13px; outline: none; background: #fff; box-sizing: border-box;
+        }
+        .search-bar input:focus, .search-bar select:focus { border-color: #00C853; box-shadow: 0 0 0 2px rgba(0,200,83,0.15); }
+        .search-keyword { flex: 1; min-width: 180px; }
+        .search-select { min-width: 100px; }
+        .search-price { width: 80px; }
+        .btn-clear { padding: 7px 12px; background: #f5f5f5; color: #666; border: 1px solid #d9d9d9; border-radius: 6px; font-size: 13px; cursor: pointer; white-space: nowrap; }
+        .btn-clear:hover { background: #eee; color: #333; }
+        .no-match { text-align: center; padding: 40px; color: #999; display: none; }
     </style>
 </head>
 <body>
@@ -122,9 +144,46 @@
         </div>
 
         <div class="manage-section">
-            <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #eee; padding-bottom: 15px; margin-bottom: 20px;">
-                <h2 style="margin: 0; border: none; padding: 0;">已发布房源管理 (共 {{ properties|length }} 套)</h2>
-                <input type="text" id="searchInput" placeholder="🔍 搜索标题、商圈、租金、户型..." style="padding: 8px 12px; border: 1px solid #d9d9d9; border-radius: 6px; width: 250px; font-size: 14px; outline: none;">
+            <div class="manage-header">
+                <div class="manage-header-top">
+                    <h2>已发布房源管理 <span class="filter-count" id="filterCount">(共 {{ properties|length }} 套)</span></h2>
+                    <div class="search-keyword-wrap">
+                        <input type="text" id="searchKeyword" class="search-keyword" placeholder="🔍 关键词：标题 / 描述 / ID">
+                        <button type="button" class="btn-clear" id="btnClearSearch">清空</button>
+                    </div>
+                </div>
+                <div class="search-bar">
+                    <select id="searchLocation" class="search-select">
+                        <option value="">全部商圈</option>
+                        <option value="横琴口岸商圈">横琴口岸</option>
+                        <option value="十字门商圈">十字门</option>
+                    </select>
+                    <select id="searchRentType" class="search-select">
+                        <option value="">全部类型</option>
+                        <option value="整租">整租</option>
+                        <option value="合租">合租</option>
+                    </select>
+                    <select id="searchLayout" class="search-select">
+                        <option value="">全部户型</option>
+                        <option value="一室">一室</option>
+                        <option value="两室">两室</option>
+                        <option value="三室">三室</option>
+                        <option value="四室及以上">四室及以上</option>
+                    </select>
+                    <select id="searchBedroom" class="search-select">
+                        <option value="">全部卧室</option>
+                        <option value="主卧">主卧</option>
+                        <option value="次卧">次卧</option>
+                    </select>
+                    <select id="searchHousingForm" class="search-select">
+                        <option value="">全部形式</option>
+                        <option value="单间公寓">单间公寓</option>
+                        <option value="多人卧室">多人卧室</option>
+                    </select>
+                    <input type="number" id="searchMinPrice" class="search-price" placeholder="最低" min="0">
+                    <span style="color:#999;font-size:13px;">—</span>
+                    <input type="number" id="searchMaxPrice" class="search-price" placeholder="最高" min="0">
+                </div>
             </div>
             {% if properties %}
             <table>
@@ -137,9 +196,18 @@
                         <th>操作</th>
                     </tr>
                 </thead>
-                <tbody>
+                <tbody id="propertyTableBody">
                     {% for prop in properties %}
-                    <tr>
+                    <tr class="prop-row"
+                        data-id="{{ prop.id }}"
+                        data-title="{{ prop.title }}"
+                        data-desc="{{ prop.desc }}"
+                        data-location="{{ prop.location }}"
+                        data-price="{{ prop.price }}"
+                        data-rent-type="{{ prop.rent_type }}"
+                        data-layout="{{ prop.layout }}"
+                        data-bedroom="{{ prop.bedroom }}"
+                        data-housing-form="{{ prop.housing_form }}">
                         <td>
                             {% if prop.media %}
                                 {% if '.mp4' in prop.media[0] or '.mov' in prop.media[0] %}
@@ -164,6 +232,7 @@
                     {% endfor %}
                 </tbody>
             </table>
+            <div class="no-match" id="noMatchHint">没有匹配的房源，请调整检索条件</div>
             {% else %}
             <div class="empty-state">目前还没有发布任何房源哦~</div>
             {% endif %}
@@ -223,21 +292,73 @@
                 }).catch(() => alert('网络异常，请稍后重试'));
             }
         }
-        // 实时搜索/过滤房源逻辑
-        document.getElementById('searchInput').addEventListener('input', function() {
-            const keyword = this.value.toLowerCase();
-            const rows = document.querySelectorAll('.manage-section tbody tr');
-            
+        // 多字段检索过滤
+        const filterEls = {
+            keyword: document.getElementById('searchKeyword'),
+            location: document.getElementById('searchLocation'),
+            rentType: document.getElementById('searchRentType'),
+            layout: document.getElementById('searchLayout'),
+            bedroom: document.getElementById('searchBedroom'),
+            housingForm: document.getElementById('searchHousingForm'),
+            minPrice: document.getElementById('searchMinPrice'),
+            maxPrice: document.getElementById('searchMaxPrice'),
+        };
+        const filterCountEl = document.getElementById('filterCount');
+        const noMatchHint = document.getElementById('noMatchHint');
+        const totalCount = {{ properties|length }};
+
+        function filterProperties() {
+            const rows = document.querySelectorAll('.prop-row');
+            if (!rows.length) return;
+
+            const keyword = (filterEls.keyword?.value || '').trim().toLowerCase();
+            const location = filterEls.location?.value || '';
+            const rentType = filterEls.rentType?.value || '';
+            const layout = filterEls.layout?.value || '';
+            const bedroom = filterEls.bedroom?.value || '';
+            const housingForm = filterEls.housingForm?.value || '';
+            const minPrice = filterEls.minPrice?.value ? parseInt(filterEls.minPrice.value, 10) : null;
+            const maxPrice = filterEls.maxPrice?.value ? parseInt(filterEls.maxPrice.value, 10) : null;
+
+            let visible = 0;
             rows.forEach(row => {
-                // 获取当前这一行的所有文字内容（包含了标题、商圈、租金等所有字段）
-                const rowText = row.innerText.toLowerCase();
-                // 如果文字内容包含了搜索关键字，就显示该行，否则隐藏
-                if (rowText.includes(keyword)) {
-                    row.style.display = '';
-                } else {
-                    row.style.display = 'none';
-                }
+                const title = (row.dataset.title || '').toLowerCase();
+                const desc = (row.dataset.desc || '').toLowerCase();
+                const id = (row.dataset.id || '').toLowerCase();
+                const price = parseInt(row.dataset.price || '0', 10) || 0;
+
+                let match = true;
+                if (keyword && !title.includes(keyword) && !desc.includes(keyword) && !id.includes(keyword)) match = false;
+                if (location && row.dataset.location !== location) match = false;
+                if (rentType && row.dataset.rentType !== rentType) match = false;
+                if (layout && row.dataset.layout !== layout) match = false;
+                if (bedroom && row.dataset.bedroom !== bedroom) match = false;
+                if (housingForm && row.dataset.housingForm !== housingForm) match = false;
+                if (minPrice !== null && price < minPrice) match = false;
+                if (maxPrice !== null && price > maxPrice) match = false;
+
+                row.style.display = match ? '' : 'none';
+                if (match) visible++;
             });
+
+            if (filterCountEl) {
+                filterCountEl.textContent = visible === totalCount
+                    ? `(共 ${totalCount} 套)`
+                    : `(显示 ${visible} / 共 ${totalCount} 套)`;
+            }
+            if (noMatchHint) {
+                noMatchHint.style.display = visible === 0 ? 'block' : 'none';
+            }
+        }
+
+        Object.values(filterEls).forEach(el => {
+            if (el) el.addEventListener('input', filterProperties);
+            if (el && el.tagName === 'SELECT') el.addEventListener('change', filterProperties);
+        });
+
+        document.getElementById('btnClearSearch')?.addEventListener('click', function() {
+            Object.values(filterEls).forEach(el => { if (el) el.value = ''; });
+            filterProperties();
         });
     </script>
 </body>
